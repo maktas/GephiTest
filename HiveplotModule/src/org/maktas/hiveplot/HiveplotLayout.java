@@ -417,7 +417,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         this.nodeOrderProperty = ECCENTRICITY;
         else if(nodeOrderProperty.toLowerCase().contentEquals("degree"))
         this.nodeOrderProperty = DEGREE;
-        else this.nodeOrderProperty = DEGREE;;
+        else this.nodeOrderProperty = DEGREE;
             
     }
     
