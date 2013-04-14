@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.maktas.hiveplot
+OpenIDE-Module-Localizing-Bundle: org/maktas/hiveplot/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
