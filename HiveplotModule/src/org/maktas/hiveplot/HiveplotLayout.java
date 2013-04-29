@@ -67,7 +67,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
     public void goAlgo() 
     {
         this.graph.readLock();
-        nodeAxis = new int[this.graph.getNodeCount()];
+        nodeAxis = new int[this.graph.getNodeCount()+1];
         boolean axisSort = this.nodeOrder != null && !this.nodeOrder.getId().equals("");
         double degree = 360/this.numAxes;                       // angle between axes
         float coeff = (float)(50.0/canvasArea);
