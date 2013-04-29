@@ -391,10 +391,10 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                 binIndex = 2;
                 }
               else if(numAxes > 4 && value <= Double.valueOf(parameter4)){
-                binIndex = 2;
+                binIndex = 3;
                 }
               else if(numAxes > 5 && value <= Double.valueOf(parameter5)){
-                binIndex = 2;
+                binIndex = 4;
                 }
               else binIndex = totalBins-1;
             }
