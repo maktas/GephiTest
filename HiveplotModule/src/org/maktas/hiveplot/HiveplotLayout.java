@@ -96,6 +96,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         {
             int pos = sortNodes.indexOf(groups);
             float ratio = (float) 0.75;
+            float denom = (float) 0.5;
 
             if(node.getAttributes().getValue(this.nodeOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")){
                 dmin = nodes.length;
@@ -111,6 +112,10 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                 max = (Double) groups[0].getAttributes().getValue(nodeOrder.getIndex());
                 dmax = (double) max;
             }
+            
+           if(dmax != dmin){ 
+                    denom = (float)2.0 / ((float)dmax-(float)dmin + (float)Math.cbrt(dmax));
+                }
             
             for (Node n : groups)
             {
@@ -136,7 +141,6 @@ public class HiveplotLayout extends AbstractLayout implements Layout
 
                 n.getNodeData().setX(z[pos].x);
                 n.getNodeData().setY(z[pos].y);
-                
             }
             
             for(Node n:groups){
@@ -145,8 +149,8 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                 
                 for(int i=0;i <groups.length; i++){
                     if(n.getId()!= groups[i].getId() && x == groups[i].getNodeData().x()){
-                        n.getNodeData().setX(x > 0 ? n.getNodeData().x() + ratio*d[pos].x*coeff : n.getNodeData().x() - ratio*d[pos].x*coeff);
-                        n.getNodeData().setY(y > 0 ? n.getNodeData().y() + ratio*d[pos].y*coeff : n.getNodeData().y() - ratio*d[pos].y*coeff);
+                        n.getNodeData().setX(x > 0 ? n.getNodeData().x() + denom*d[pos].x*coeff : n.getNodeData().x() - denom*d[pos].x*coeff);
+                        n.getNodeData().setY(y > 0 ? n.getNodeData().y() + denom*d[pos].y*coeff : n.getNodeData().y() - denom*d[pos].y*coeff);
                     }
                 }
             }
