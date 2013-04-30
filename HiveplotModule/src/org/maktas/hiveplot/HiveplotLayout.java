@@ -400,8 +400,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
               else binIndex = totalBins-1;
             }
             nodeAxis[n.getId()-1] = binIndex;
-            System.out.println(n.getId());
-            System.out.println(this.graph.getNodeCount());
+            System.out.println("Number of nodes: " + this.graph.getNodeCount());
             bins[binIndex]++;
         }
         
