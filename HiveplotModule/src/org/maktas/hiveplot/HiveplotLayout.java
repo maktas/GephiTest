@@ -96,7 +96,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         {
             int pos = sortNodes.indexOf(groups);
             float ratio = (float) 0.75;
-            float denom = (float) 0.5;
+            float denom = (float) 1.0;
 
             if(node.getAttributes().getValue(this.axesOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")){
                 dmin = nodes.length;
