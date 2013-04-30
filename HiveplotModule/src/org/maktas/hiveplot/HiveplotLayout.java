@@ -98,42 +98,42 @@ public class HiveplotLayout extends AbstractLayout implements Layout
             float ratio = (float) 0.75;
             float denom = (float) 0.5;
 
-            if(node.getAttributes().getValue(this.nodeOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")){
+            if(node.getAttributes().getValue(this.axesOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")){
                 dmin = nodes.length;
                 dmax = 0;
             }
-            else if(this.nodeOrder.getTitle().contentEquals("Degree")){
+            else if(this.axesOrder.getTitle().contentEquals("Degree")){
                 dmin = (double) this.graph.getDegree(groups[groups.length-1]);
                 dmax = (double) this.graph.getDegree(groups[0]);
             }
             else{
-                min = (Double) groups[groups.length-1].getAttributes().getValue(nodeOrder.getIndex());
+                min = (Double) groups[groups.length-1].getAttributes().getValue(axesOrder.getIndex());
                 dmin = (double) min;
-                max = (Double) groups[0].getAttributes().getValue(nodeOrder.getIndex());
+                max = (Double) groups[0].getAttributes().getValue(axesOrder.getIndex());
                 dmax = (double) max;
             }
             
            if(dmax != dmin){ 
-                    denom = (float)2.0 / ((float)dmax-(float)dmin + (float)Math.cbrt(dmax));
+                    denom = ((float)dmax-(float)dmin)*(float)0.5 / ((float)dmax-(float)dmin + (float)Math.cbrt(dmax));
                 }
             
             for (Node n : groups)
             {
-                if(node.getAttributes().getValue(this.nodeOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")){
+                if(node.getAttributes().getValue(this.axesOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")){
                     dvalue += 1;
                     value = (float) dvalue;
                 }
-                else if(this.nodeOrder.getTitle().contentEquals("Degree")){
+                else if(this.axesOrder.getTitle().contentEquals("Degree")){
                 dvalue = (double) this.graph.getDegree(n);
                 value = (float) dvalue;
                 }
                 else{
-                dvalue = (Double) n.getAttributes().getValue(nodeOrder.getIndex());
+                dvalue = (Double) n.getAttributes().getValue(axesOrder.getIndex());
                 value = (float) dvalue;
                 }
                 
                 if(dmax != dmin){ 
-                    ratio = (value-(float)dmin + (float)Math.cbrt(dmax)) / ((float)dmax-(float)dmin + (float)Math.cbrt(dmax));
+                    ratio = (value-(float)dmin + (float)Math.cbrt(dmax) ) / ((float)dmax-(float)dmin + (float)Math.cbrt(dmax));
                 }
                 
                 z[pos] = new Point2D.Float((z[pos].x > 0 ? d[pos].x * ratio : -d[pos].x * ratio),
@@ -143,6 +143,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                 n.getNodeData().setY(z[pos].y);
             }
             
+            //if two nodes are in the same location slide one of them just a little so that each one could be seen
             for(Node n:groups){
                 float x = n.getNodeData().x();
                 float y = n.getNodeData().y();
@@ -195,15 +196,15 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         {
             properties.add(LayoutProperty.createProperty(
                     this, AttributeColumn.class,
-                    "Node Order Property",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.axisAssign.name"),
                     HIVEPLOT,
-                    "The column used to sort nodes",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.axisAssign.desc"),
                     "getColumn", "setColumn", NodeColumnNumbersEditor.class));
             properties.add(LayoutProperty.createProperty(
                     this, AttributeColumn.class,
-                    "Axes Order Property",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.axisOrder.name"),
                     HIVEPLOT,
-                    "The column used to sort nodes on axes",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.axisOrder.desc"),
                     "getAxesColumn", "setAxesColumn", NodeColumnNumbersEditor.class));
             properties.add(LayoutProperty.createProperty(
                     this, Float.class,
@@ -221,33 +222,33 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                     "getNumAxes", "setNumAxes"));
            properties.add(LayoutProperty.createProperty(
                     this, String.class,
-                    "1st Parameter",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter1.name"),
                     HIVEPLOT,
-                    "Label attribute for the first axis or the first upper limit for the node order property",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter1.desc"),
                     "getParameter1", "setParameter1"));
            properties.add(LayoutProperty.createProperty(
                     this, String.class,
-                    "2nd Parameter",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter2.name"),
                     HIVEPLOT,
-                    "Label attribute for the second axis or the second upper limit for the node order property",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter2.desc"),
                     "getParameter2", "setParameter2"));
            properties.add(LayoutProperty.createProperty(
                     this, String.class,
-                    "3rd Parameter",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter3.name"),
                     HIVEPLOT,
-                    "Label attribute for the third axis or the third upper limit for node order property",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter3.desc"),
                     "getParameter3", "setParameter3"));
            properties.add(LayoutProperty.createProperty(
                     this, String.class,
-                    "4th Parameter",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter4.name"),
                     HIVEPLOT,
-                    "Label attribute for the fourth axis or the fourth upper limit for node order property",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter4.desc"),
                     "getParameter4", "setParameter4"));
            properties.add(LayoutProperty.createProperty(
                     this, String.class,
-                    "5th Parameter",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter5.name"),
                     HIVEPLOT,
-                    "Label attribute for the fifth axis or the fifth upper limit for node order property",
+                    NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter5.desc"),
                     "getParameter5", "setParameter5"));
         } 
         catch (MissingResourceException e)
@@ -399,6 +400,8 @@ public class HiveplotLayout extends AbstractLayout implements Layout
               else binIndex = totalBins-1;
             }
             nodeAxis[n.getId()-1] = binIndex;
+            System.out.println(n.getId());
+            System.out.println(this.graph.getNodeCount());
             bins[binIndex]++;
         }
         
