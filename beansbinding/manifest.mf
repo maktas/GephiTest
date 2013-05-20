@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.maktas.beansbinding
+OpenIDE-Module-Localizing-Bundle: org/maktas/beansbinding/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

@@ -3,10 +3,13 @@ package org.maktas.hiveplot;
 
 import java.awt.geom.Point2D;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.gephi.data.attributes.api.AttributeColumn;
+import org.gephi.data.attributes.api.AttributeController;
+import org.gephi.data.attributes.api.AttributeModel;
+import org.gephi.data.attributes.api.AttributeTable;
 import org.gephi.graph.api.Graph;
+import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
 import org.gephi.graph.api.NodeData;
 import org.gephi.layout.plugin.AbstractLayout;
@@ -20,21 +23,17 @@ import org.gephi.ui.propertyeditor.NodeColumnNumbersEditor;
 
 public class HiveplotLayout extends AbstractLayout implements Layout
 {
-    boolean executing;
+    boolean executing = false;
     private float canvasArea;           // Set boundary for node placement.
     private int numAxes;                // Total number of axes.
-    private String parameter1="";          // Parameter for the nodes on the first axis
-    private String parameter2="";          // Parameter for the nodes on the second axis
-    private String parameter3="";          // Parameter for the nodes on the third axis
-    private String parameter4="";          // Parameter for the nodes on the fourth axis
-    private String parameter5="";          // Parameter for the nodes on the fifth axis
+    private double absmin=0, absmax=0;  //Smallest and biggest node values
+    private String[] parameter= new String[10];          // Parameter array for the inputs
     protected Graph graph;              // The graph being laid out.
     private AttributeColumn nodeOrder;
-    private AttributeColumn axesOrder;
+    private AttributeColumn axisOrder;
     private int[] nodeAxis;             // The array for storing which axis the node belongs to
     private double[] nodeLocation;             // The array for storing which axis the node belongs to
-
-
+    boolean isString;
     /**
      * @param layoutBuilder 
      */
@@ -52,15 +51,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         this.graph = graphModel.getGraphVisible();
         for (Node n : graph.getNodes())
             n.getNodeData().setLayoutData(new ForceVectorNodeLayoutData());
-        /*Renderer mr;
-        
-        PreviewProperty properties;
-                properties = new PreviewProperty(this.mr,
-                PreviewProperty.EDGE_CURVED,
-                Boolean.class,
-                "Curved Edges",
-                "The edges will be curved",
-                PreviewProperty.EDGE_CURVED).setValue(true);*/
+
     }
     
     @Override
@@ -68,7 +59,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
     {
         this.graph.readLock();
         nodeAxis = new int[this.graph.getNodeCount()+1];
-        boolean axisSort = this.nodeOrder != null && !this.nodeOrder.getId().equals("");
+        boolean axisSort = this.axisOrder != null && !this.axisOrder.getId().equals("");
         double degree = 360/this.numAxes;                       // angle between axes
         float coeff = (float)(50.0/canvasArea);
         float value;
@@ -76,8 +67,11 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         Double min, max;
         double dmin, dmax;
         Node[] nodes = this.graph.getNodes().toArray();
+        
+       this.setAxisColumn(axisOrder);
 
-        List<Node[]> sortNodes = generateAxes(axisSort, false);  // Axes 
+      try{
+        List<Node[]> sortNodes = generateAxes(axisSort, false);  // Axes
         Point2D.Float[] p = new Point2D.Float[this.numAxes];    // Max points for each axis
         Point2D.Float[] z = new Point2D.Float[this.numAxes];    // Next node position to draw
         Point2D.Float[] d = new Point2D.Float[this.numAxes];    // Absolute values of max points for each axis
@@ -98,37 +92,38 @@ public class HiveplotLayout extends AbstractLayout implements Layout
             float ratio = (float) 0.75;
             float denom = (float) 1.0;
 
-            if(node.getAttributes().getValue(this.axesOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")){
-                dmin = nodes.length;
-                dmax = 0;
+            if(node.getAttributes().getValue(this.axisOrder.getId()).getClass().getName().contentEquals("java.lang.String")){
+                dmin = 0;
+                dmax = groups.length;
             }
-            else if(this.axesOrder.getTitle().contentEquals("Degree")){
+            
+            else if(this.axisOrder.getId().toLowerCase().contentEquals("degree")){
                 dmin = (double) this.graph.getDegree(groups[groups.length-1]);
                 dmax = (double) this.graph.getDegree(groups[0]);
             }
             else{
-                min = (Double) groups[groups.length-1].getAttributes().getValue(axesOrder.getIndex());
+                min = Double.valueOf(groups[groups.length-1].getAttributes().getValue(axisOrder.getId()).toString());
                 dmin = (double) min;
-                max = (Double) groups[0].getAttributes().getValue(axesOrder.getIndex());
+                max = Double.valueOf(groups[0].getAttributes().getValue(axisOrder.getId()).toString());
                 dmax = (double) max;
             }
             
            if(dmax != dmin){ 
                     denom = ((float)dmax-(float)dmin)*(float)0.5 / ((float)dmax-(float)dmin + (float)Math.cbrt(dmax));
                 }
-            
+                       
             for (Node n : groups)
             {
-                if(node.getAttributes().getValue(this.axesOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")){
+                if(node.getAttributes().getValue(this.axisOrder.getId()).getClass().getName().contentEquals("java.lang.String")){
                     dvalue += 1;
                     value = (float) dvalue;
                 }
-                else if(this.axesOrder.getTitle().contentEquals("Degree")){
+                else if(this.axisOrder.getTitle().contentEquals("Degree")){
                 dvalue = (double) this.graph.getDegree(n);
                 value = (float) dvalue;
                 }
                 else{
-                dvalue = (Double) n.getAttributes().getValue(axesOrder.getIndex());
+                dvalue = Double.valueOf(n.getAttributes().getValue(axisOrder.getId()).toString());
                 value = (float) dvalue;
                 }
                 
@@ -143,7 +138,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                 n.getNodeData().setY(z[pos].y);
             }
             
-            //if two nodes are in the same location slide one of them just a little so that each one could be seen
+            //If two nodes are in the same location slide one of them just a little so that each one could be seen
             for(Node n:groups){
                 float x = n.getNodeData().x();
                 float y = n.getNodeData().y();
@@ -157,9 +152,19 @@ public class HiveplotLayout extends AbstractLayout implements Layout
             }
 
         }
+        
+      }
+      catch (NullPointerException e)
+      {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Please select the ordering properties!");
+      }
+      catch(IndexOutOfBoundsException e){
+            e.printStackTrace();
+      }
 
-        this.graph.readUnlock();
-        endAlgo();
+      this.graph.readUnlock();
+      endAlgo();
     }
 
 
@@ -181,7 +186,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
     {
         return executing;
     }
-    
+
 
     /**
      * @return 
@@ -190,8 +195,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
     public LayoutProperty[] getProperties() 
     {
         List<LayoutProperty> properties = new ArrayList<LayoutProperty>();
-        final String HIVEPLOT  = "Hiveplot Layout";
-
+        /*final String HIVEPLOT  = "Hiveplot Layout";
         try 
         {
             properties.add(LayoutProperty.createProperty(
@@ -205,7 +209,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                     NbBundle.getMessage(HiveplotLayout.class,"hiveplot.axisOrder.name"),
                     HIVEPLOT,
                     NbBundle.getMessage(HiveplotLayout.class,"hiveplot.axisOrder.desc"),
-                    "getAxesColumn", "setAxesColumn", NodeColumnNumbersEditor.class));
+                    "getAxisColumn", "setAxisColumn", NodeColumnNumbersEditor.class));
             properties.add(LayoutProperty.createProperty(
                     this, Float.class,
                     NbBundle.getMessage(HiveplotLayout.class, "hiveplot.area.name"),
@@ -220,7 +224,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                     "hiveplot.numAxes.name",
                     NbBundle.getMessage(HiveplotLayout.class, "hiveplot.numAxes.desc"),
                     "getNumAxes", "setNumAxes"));
-           properties.add(LayoutProperty.createProperty(
+            properties.add(LayoutProperty.createProperty(
                     this, String.class,
                     NbBundle.getMessage(HiveplotLayout.class,"hiveplot.parameter1.name"),
                     HIVEPLOT,
@@ -257,8 +261,9 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         } catch (NoSuchMethodException e) {
             Exceptions.printStackTrace(e);
         }
-        
+        */        
         return properties.toArray(new LayoutProperty[0]);
+
     }
 
 
@@ -282,13 +287,17 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         Node[] n = this.graph.getNodes().toArray();
         Node node = n[0];
         
-        if (nodeOrder != null && !node.getAttributes().getValue(this.nodeOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")) {
+        isString = node.getAttributes().getValue(this.nodeOrder.getId()).getClass().getName().contentEquals("java.lang.String");
+        
+        if (nodeOrder != null && !isString) {
+            
             Arrays.sort(n, new Comparator<Node>() {
 
                 @Override
                 public int compare(Node o1, Node o2) {
-                    Number n1 = (Number) o1.getAttributes().getValue(nodeOrder.getIndex());
-                    Number n2 = (Number) o2.getAttributes().getValue(nodeOrder.getIndex());
+                    
+                    Double n1 = Double.valueOf(o1.getAttributes().getValue(nodeOrder.getId()).toString());
+                    Double n2 = Double.valueOf(o2.getAttributes().getValue(nodeOrder.getId()).toString());
                     
                     if (n1.doubleValue() < n2.doubleValue()) {
                         return -1;
@@ -301,7 +310,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
             });
         }
 
-        int[] order = findBins(n);
+        int[] order = findBins(n);        
         int lowerBound = 0;
         int upperBound = order[0];
         
@@ -317,16 +326,15 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         if(sortNodesOnAxis)
         {
             ArrayList<Node[]> nodeGroupsAxis = new ArrayList<Node[]>();
+            
             for(Node[] ng : nodeGroups)
             {
-                
-                if (!node.getAttributes().getValue(this.axesOrder.getIndex()).getClass().getName().contentEquals("java.lang.String")) {
                 Arrays.sort(ng, new Comparator<Node>() {
 
                 @Override
                 public int compare(Node o1, Node o2) {
-                    Number n1 = (Number) o1.getAttributes().getValue(axesOrder.getIndex());
-                    Number n2 = (Number) o2.getAttributes().getValue(axesOrder.getIndex());
+                    Number n1 = Double.valueOf(o1.getAttributes().getValue(axisOrder.getId()).toString());
+                    Number n2 = Double.valueOf(o2.getAttributes().getValue(axisOrder.getId()).toString());
                     if (n1.doubleValue() < n2.doubleValue()) {
                         return 1;
                     } else if (n1.doubleValue() > n2.doubleValue()) {
@@ -336,16 +344,16 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                     }
                   }
                 });
-              }
+
                 
                 nodeGroupsAxis.add(ng);
             }
-            return nodeGroupsAxis;
+               return nodeGroupsAxis;
         }
         else
         {
             return nodeGroups;
-        }
+        }    
     }
     
     /**
@@ -359,51 +367,52 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         int[] bins = new int[totalBins];
         int binIndex = 0;
         Double value;
+        Integer ivalue;
         String svalue;
-        boolean isString;
-        isString = nodes[0].getAttributes().getValue(this.nodeOrder.getIndex()).getClass().getName().contentEquals("java.lang.String");
         
+        try{
+            
         for (Node n : nodes)
         {
             if(isString){
-                svalue = (String) n.getAttributes().getValue(this.nodeOrder.getIndex());
-                if(svalue.toLowerCase().contentEquals(parameter1)) binIndex=0;
-                else if(svalue.toLowerCase().contentEquals(parameter2)) binIndex=1;
-                else if(svalue.toLowerCase().contentEquals(parameter3)) binIndex=2;
-                else if(svalue.toLowerCase().contentEquals(parameter4)) binIndex=3;
-                else if(svalue.toLowerCase().contentEquals(parameter5)) binIndex=4;
-                else binIndex=numAxes-1;
+                svalue = (String) n.getAttributes().getValue(this.nodeOrder.getId());
+              for(int i=0; i<numAxes; i++){
+                if( svalue.toLowerCase().contentEquals(parameter[i])) 
+                    binIndex=i;
+                }
             }
             else{
-                if(this.nodeOrder.getTitle().contentEquals("Degree")){
+                if(this.nodeOrder.getId().toLowerCase().contentEquals("degree")){
                     value = (double) this.graph.getDegree(n);
                 }
+                else if(n.getAttributes().getValue(nodeOrder.getId()).getClass().getName().contentEquals("java.lang.Integer")){
+                    ivalue = (Integer) n.getAttributes().getValue(nodeOrder.getId());
+                    value = ivalue.doubleValue();
+                }
                 else{
-                value = (Double) n.getAttributes().getValue(nodeOrder.getIndex());
+                value = Double.valueOf(n.getAttributes().getValue(nodeOrder.getId()).toString());
                 }
 
-              if(value <= Double.valueOf(parameter1)){
-                binIndex = 0;
+              for(int i=0; i<numAxes-1; i++){
+                if(value <= Double.valueOf(parameter[i])){
+                    binIndex = i;
+                    break;
                 }
-              else if(value <= Double.valueOf(parameter2)){
-                binIndex = 1;
-                }
-              else if(numAxes > 3 && value <= Double.valueOf(parameter3)){
-                binIndex = 2;
-                }
-              else if(numAxes > 4 && value <= Double.valueOf(parameter4)){
-                binIndex = 3;
-                }
-              else if(numAxes > 5 && value <= Double.valueOf(parameter5)){
-                binIndex = 4;
-                }
-              else binIndex = totalBins-1;
-            }
+                else binIndex = numAxes-1;
+              }
+              
             nodeAxis[n.getId()-1] = binIndex;
-            System.out.println("Number of nodes: " + this.graph.getNodeCount());
+            //System.out.println("Number of nodes: " + this.graph.getNodeCount());
             bins[binIndex]++;
+            }
+          }
         }
-        
+        catch(NumberFormatException e){
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Please enter the parameters correctly!");
+        }
+
+          
         return(bins);
     }
 
@@ -456,51 +465,100 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         this.nodeOrder = column;
     }
     
-    public AttributeColumn getAxesColumn() {
-        return axesOrder;
+    public AttributeColumn getAxisColumn() {
+        return axisOrder;
     }
 
-    public void setAxesColumn(AttributeColumn column) {
-        this.axesOrder = column;
+    public void setAxisColumn(AttributeColumn column) {
+        this.axisOrder = column;
     }
     
-    public String getParameter1() {
-        return parameter1;
+    public String getParameter(int num) {
+        return parameter[num];
     }
 
-    public void setParameter1(String parameter) {
-        this.parameter1 = parameter;
-    }
-
-    public String getParameter2() {
-        return parameter2;
-    }
-
-    public void setParameter2(String parameter) {
-        this.parameter2 = parameter;
-    }
-
-    public String getParameter3() {
-        return parameter3;
-    }
-
-    public void setParameter3(String parameter) {
-        this.parameter3 = parameter;
+    public void setParameter(int num, String parameter) {
+        this.parameter[num] = parameter;
     }
     
-    public String getParameter4() {
-        return parameter4;
-    }
+    public double getMin(final AttributeColumn nodeOrder) {
+        
+        this.graph = graphModel.getGraphVisible();
+        for (Node n : graph.getNodes())
+            n.getNodeData().setLayoutData(new ForceVectorNodeLayoutData());
+        
+        Node[] n = this.graph.getNodes().toArray();
+        
+        Node node = n[0];
+        isString = node.getAttributes().getValue(this.nodeOrder.getId()).getClass().getName().contentEquals("java.lang.String");
+        
+        if (nodeOrder != null && !isString) {
+            Arrays.sort(n, new Comparator<Node>() {
 
-    public void setParameter4(String parameter) {
-        this.parameter4 = parameter;
+                @Override
+                public int compare(Node o1, Node o2) {
+                    Number n1 = (Number) o1.getAttributes().getValue(nodeOrder.getId());
+                    Number n2 = (Number) o2.getAttributes().getValue(nodeOrder.getId());
+                    
+                    if (n1.doubleValue() < n2.doubleValue()) {
+                        return -1;
+                    } else if (n1.doubleValue() > n2.doubleValue()) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
+        }
+        
+        Double min;
+        
+        if(!isString){
+                min = Double.valueOf(n[0].getAttributes().getValue(nodeOrder.getId()).toString());
+                absmin = (double) min.floatValue();
+        }
+        else
+                absmin = 0;
+
+        return absmin;
     }
     
-    public String getParameter5() {
-        return parameter5;
-    }
+    public double getMax(final AttributeColumn nodeOrder) {
+        this.graph.readLock();
+        
+        Node[] n = this.graph.getNodes().toArray();
+        Node node = n[0];
+        isString = node.getAttributes().getValue(this.nodeOrder.getId()).getClass().getName().contentEquals("java.lang.String");
+        
+        if (nodeOrder != null && !isString) {
+            Arrays.sort(n, new Comparator<Node>() {
 
-    public void setParameter5(String parameter) {
-        this.parameter5 = parameter;
+                @Override
+                public int compare(Node o1, Node o2) {
+                    Number n1 = (Number) o1.getAttributes().getValue(nodeOrder.getId());
+                    Number n2 = (Number) o2.getAttributes().getValue(nodeOrder.getId());
+                    
+                    if (n1.doubleValue() < n2.doubleValue()) {
+                        return -1;
+                    } else if (n1.doubleValue() > n2.doubleValue()) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
+        }
+        
+        Double max;
+        
+        if(!isString){
+                max = Double.valueOf(n[n.length-1].getAttributes().getValue(nodeOrder.getId()).toString());
+                absmax = (double) max.floatValue();
+        }
+        else
+                absmax = 1;
+        
+        return absmax;
     }
+   
 }
