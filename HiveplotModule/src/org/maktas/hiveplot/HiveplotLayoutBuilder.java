@@ -245,6 +245,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                   JSlider js = (JSlider) evt.getSource();
                   oldnumAxes = numAxes;
                   numAxes = js.getValue();
+                  hl.setNumAxes(numAxes);
                   if(oldnumAxes != numAxes)
                   refresh(2);
               }
@@ -481,7 +482,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                     hivePanel.remove(emptyLabel[oldnumAxes-1]);
                     hivePanel.remove(jText[oldnumAxes-1]);
                   }
-                  min = slider[oldnumAxes-2].getMinimum();
+                  min = slider[oldnumAxes-2].getValue();
                   
                   if(max-min > 1000)
                     tickSpace = 100;
