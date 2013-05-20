@@ -310,7 +310,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                       public void actionPerformed(ActionEvent ae) {
                           JTextField jt = (JTextField) ae.getSource();
                           jspos = (jt.getAccessibleContext().getAccessibleIndexInParent()-10)/2;
-                          //hl.setParameter(jspos,jt.getText());
+                          hl.setParameter(jspos,jt.getText());
                       }
                 });
                 
@@ -448,7 +448,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                           public void actionPerformed(ActionEvent ae) {
                               JTextField jt = (JTextField) ae.getSource();
                               jspos = (jt.getAccessibleContext().getAccessibleIndexInParent()-10)/2;
-                              //hl.setParameter(jspos,jt.getText());
+                              hl.setParameter(jspos,jt.getText());
                           }
                       });
                   hivePanel.add(jText[numAxes-1]);
@@ -475,26 +475,29 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
             
           //else if number of axes is changed or a value is selected in axis assignment combobox, recompute numerical sliders
           else if(value==2){
-            if(max-min > 1000)
-              tickSpace = 100;
-            else if(max-min > 500)
-              tickSpace = 50;
-            else if(max-min > 100)
-              tickSpace = 10;
-            else if(max-min > 50)
-              tickSpace = 5;
-            else if(max-min > 30)
-              tickSpace = 3;
-            else if(max-min > 10)
-              tickSpace = 2;
-            else
-              tickSpace = 1;
               
               if(oldnumAxes < numAxes){
                   if(radioValue == 1){
                     hivePanel.remove(emptyLabel[oldnumAxes-1]);
                     hivePanel.remove(jText[oldnumAxes-1]);
                   }
+                  min = slider[oldnumAxes-2].getMinimum();
+                  
+                  if(max-min > 1000)
+                    tickSpace = 100;
+                  else if(max-min > 500)
+                    tickSpace = 50;
+                  else if(max-min > 100)
+                    tickSpace = 10;
+                  else if(max-min > 50)
+                    tickSpace = 5;
+                  else if(max-min > 30)
+                    tickSpace = 3;
+                  else if(max-min > 10)
+                    tickSpace = 2;
+                  else
+                    tickSpace = 1;
+                  
                   for(int i=oldnumAxes-1;i<numAxes-1;i++){
                         slider[i] = new JSlider(min, max);
                         slider[i].setPreferredSize(new Dimension(150,30));
@@ -553,7 +556,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                           public void actionPerformed(ActionEvent ae) {
                               JTextField jt = (JTextField) ae.getSource();
                               jspos = (jt.getAccessibleContext().getAccessibleIndexInParent()-10)/2;
-                              //hl.setParameter(jspos,jt.getText());
+                              hl.setParameter(jspos,jt.getText());
                           }
                         });
                     
@@ -564,11 +567,11 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
               }
               
               else if(oldnumAxes > numAxes){
-                  if(radioValue == 1){
+                 if(radioValue == 1){
                     hivePanel.remove(emptyLabel[oldnumAxes-1]);
                     hivePanel.remove(jText[oldnumAxes-1]);
                   }
-                   for(int i=numAxes-1;i<oldnumAxes-1;i++){
+                  for(int i=numAxes-1;i<oldnumAxes-1;i++){
                     if(radioValue == 1){
                         hivePanel.remove(slider[i]);
                         hivePanel.remove(jText[i]);
@@ -578,7 +581,8 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                         hivePanel.remove(jText[i]);
                     }
                    }
-                   if(radioValue == 1){
+                  
+                 if(radioValue == 1){
                         emptyLabel[numAxes-1] = new JLabel("");
                         hivePanel.add(emptyLabel[numAxes-1]);
                         jText[numAxes-1] = new JTextField();
@@ -588,20 +592,35 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                           public void actionPerformed(ActionEvent ae) {
                               JTextField jt = (JTextField) ae.getSource();
                               jspos = (jt.getAccessibleContext().getAccessibleIndexInParent()-10)/2;
-                              //hl.setParameter(jspos,jt.getText());
+                              hl.setParameter(jspos,jt.getText());
                           }
                         });
                     
                         hivePanel.add(jText[numAxes-1]);
-                  }
+                 } 
                    
               }
-              
+              //if a new value is chosen in axis assignment combo box recompute sliders
               else{
                   for(int i=0;i<numAxes-1;i++){
                         hivePanel.remove(slider[i]);
                         hivePanel.remove(jText[i]);
                   }
+                                  
+                if(max-min > 1000)
+                    tickSpace = 100;
+                else if(max-min > 500)
+                    tickSpace = 50;
+                else if(max-min > 100)
+                    tickSpace = 10;
+                else if(max-min > 50)
+                    tickSpace = 5;
+                else if(max-min > 30)
+                    tickSpace = 3;
+                else if(max-min > 10)
+                    tickSpace = 2;
+                else
+                    tickSpace = 1;
                   
                   for(int i=0;i<numAxes-1;i++){
                         slider[i] = new JSlider(min, max);
