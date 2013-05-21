@@ -253,6 +253,12 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
           });
           hivePanel.add(axesNumber, grid);
           
+          /*label = new JLabel("Please select the interval");
+          hivePanel.add(label, grid);
+            
+          label = new JLabel("");
+          hivePanel.add(label, grid);*/
+          
           min = (int) Math.floor(hl.getMin(nodeOrder));
           max = (int) Math.floor(hl.getMax(nodeOrder));
           
@@ -292,7 +298,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                           
                           hl.setParameter(jspos,stringValue);
                           for(int j=jspos+1;j<numAxes-1;j++){
-                                slider[j].setMinimum(jsValue+1);
+                                slider[j].setMinimum(jsValue);
                                 jsValue = slider[j].getValue();
                                 stringValue = jsValue + "";
                                 jText[j].setText(stringValue);
@@ -522,7 +528,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                                 
                                 hl.setParameter(jspos,stringValue);
                                 for(int j=jspos+1;j<numAxes-1;j++){
-                                    slider[j].setMinimum(jsValue+1);
+                                    slider[j].setMinimum(jsValue);
                                     jsValue = slider[j].getValue();
                                     stringValue = jsValue + "";
                                     jText[j].setText(stringValue);
@@ -641,7 +647,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                                 
                                 hl.setParameter(jspos,stringValue);
                                 for(int j=jspos+1;j<numAxes-1;j++){
-                                    slider[j].setMinimum(jsValue+1);
+                                    slider[j].setMinimum(jsValue);
                                     jsValue = slider[j].getValue();
                                     stringValue = jsValue + "";
                                     jText[j].setText(stringValue);
@@ -655,9 +661,26 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                     jText[i] = new JTextField();
                     jText[i].setEditable(false);
                     jText[i].setText(jsValue + "");
+                    jText[i].addActionListener(new ActionListener() {
+                          @Override
+                          public void actionPerformed(ActionEvent ae) {
+                              JTextField jt = (JTextField) ae.getSource();
+                              jspos = (jt.getAccessibleContext().getAccessibleIndexInParent()-10)/2;
+                              hl.setParameter(jspos,jt.getText());
+                          }
+                        });
                 
                     hivePanel.add(jText[i]);
-                }
+                    }
+                    
+                    if(radioValue == 1){
+                        for(int i=0;i<numAxes-1;i++){
+                            slider[i].setVisible(false);
+                            jText[i].setText("");
+                            jText[i].setEditable(true);
+                        }
+                    }
+                    
             }
               
           }
