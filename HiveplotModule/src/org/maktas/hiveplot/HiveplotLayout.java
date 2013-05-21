@@ -287,8 +287,6 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         Node[] n = this.graph.getNodes().toArray();
         Node node = n[0];
         
-        System.out.println(nodeOrder.getId());
-        
         isString = node.getAttributes().getValue(this.nodeOrder.getId()).getClass().getName().contentEquals("java.lang.String");
         
         if (nodeOrder != null && !isString) {
@@ -403,8 +401,6 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                 else binIndex = numAxes-1;
               }
             
-            System.out.println("Node ID: " + n.getNodeData().getAttributes().getValue("Id"));
-            System.out.println("Node ID: " + n.getNodeData().getLabel());
             int pos = Integer.valueOf((String)n.getNodeData().getAttributes().getValue("Id"));
             nodeAxis[pos] = binIndex;
             bins[binIndex]++;

@@ -173,7 +173,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
             nodeOrder = m[0];
             hl.setColumn(nodeOrder);
             
-            cb = new JComboBox<AttributeColumn> ();
+            cb = new JComboBox<AttributeColumn> (m);
             cb.addItemListener(new ItemListener() {
 
               @Override
@@ -215,7 +215,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
             axisOrder = o[0];
             hl.setAxisColumn(axisOrder);
             
-            cb2 = new JComboBox<AttributeColumn> ();
+            cb2 = new JComboBox<AttributeColumn> (o);
             cb2.addItemListener(new ItemListener() {
 
               @Override
