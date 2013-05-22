@@ -61,7 +61,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         nodeAxis = new int[this.graph.getNodeCount()+1];
         boolean axisSort = this.axisOrder != null && !this.axisOrder.contentEquals("");
         double degree = 360/this.numAxes;                       // angle between axes
-        float coeff = (float)(50.0/canvasArea);
+        float coeff = (float)(100.0/canvasArea);
         float value;
         double dvalue= 0;
         Double min, max;
@@ -89,7 +89,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         for(Node[] groups : sortNodes)
         {
             int pos = sortNodes.indexOf(groups);
-            float ratio = (float) 0.75;
+            float ratio = (float) 1.0;
             float denom = (float) 1.0;
 
             if(node.getAttributes().getValue(this.axisOrder).getClass().getName().contentEquals("java.lang.String")){
@@ -98,18 +98,31 @@ public class HiveplotLayout extends AbstractLayout implements Layout
             }
             
             else if(this.axisOrder.toLowerCase().contentEquals("degree")){
-                dmin = (double) this.graph.getDegree(groups[groups.length-1]);
-                dmax = (double) this.graph.getDegree(groups[0]);
+                if(groups.length == 0){
+                    dmin = 0;
+                    dmax = 1;
+                }
+                else{
+                    dmin = (double) this.graph.getDegree(groups[groups.length-1]);
+                    dmax = (double) this.graph.getDegree(groups[0]);
+                    
+                }
             }
             else{
+                if(groups.length == 0){
+                    dmin = 0;
+                    dmax = 1;
+                }
+                else{
                 min = Double.valueOf(groups[groups.length-1].getAttributes().getValue(axisOrder).toString());
                 dmin = (double) min;
                 max = Double.valueOf(groups[0].getAttributes().getValue(axisOrder).toString());
                 dmax = (double) max;
+                }
             }
             
            if(dmax != dmin){ 
-                    denom = ((float)dmax-(float)dmin)*(float)0.5 / ((float)dmax-(float)dmin + (float)Math.cbrt(dmax));
+                    denom = (float)1.0 / ((float)dmax-(float)dmin + (float)Math.cbrt(dmax));
                 }
                        
             for (Node n : groups)
@@ -366,6 +379,7 @@ public class HiveplotLayout extends AbstractLayout implements Layout
         int totalBins = this.numAxes;
         int[] bins = new int[totalBins];
         int binIndex = 0;
+        int pos = 0;
         Double value;
         Integer ivalue;
         String svalue;
@@ -401,9 +415,10 @@ public class HiveplotLayout extends AbstractLayout implements Layout
                 else binIndex = numAxes-1;
               }
             
-            int pos = Integer.valueOf((String)n.getNodeData().getAttributes().getValue("Id"));
+            //int pos = Integer.valueOf((String)n.getNodeData().getAttributes().getValue("Id"));
             nodeAxis[pos] = binIndex;
             bins[binIndex]++;
+            pos++;
             }
           }
         }

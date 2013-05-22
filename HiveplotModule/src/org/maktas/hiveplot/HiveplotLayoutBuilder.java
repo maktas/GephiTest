@@ -170,10 +170,8 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                     }
                 }
             }
-            nodeOrder = m[0];
-            hl.setColumn(nodeOrder);
             
-            cb = new JComboBox<String> (m);
+            cb = new JComboBox<String> ();
             cb.addItemListener(new ItemListener() {
 
               @Override
@@ -211,11 +209,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                     }
             }
             
-            //Set the first value in the combo box as on-axis ordering property
-            axisOrder = o[0];
-            hl.setAxisColumn(axisOrder);
-            
-            cb2 = new JComboBox<String> (o);
+            cb2 = new JComboBox<String> ();
             cb2.addItemListener(new ItemListener() {
 
               @Override
@@ -258,71 +252,6 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
             
           label = new JLabel("");
           hivePanel.add(label, grid);*/
-          
-          min = (int) Math.floor(hl.getMin(nodeOrder));
-          max = (int) Math.floor(hl.getMax(nodeOrder));
-          
-            if(max-min > 1000)
-              tickSpace = 100;
-            else if(max-min > 500)
-              tickSpace = 50;
-            else if(max-min > 100)
-              tickSpace = 10;
-            else if(max-min > 50)
-              tickSpace = 5;
-            else if(max-min > 30)
-              tickSpace = 3;
-            else if(max-min > 10)
-              tickSpace = 2;
-            else
-              tickSpace = 1;
-          
-            for(int i=0;i<numAxes-1;i++){
-                slider[i] = new JSlider(min, max);
-                slider[i].setPreferredSize(new Dimension(150,30));
-                slider[i].setPaintLabels(true);
-                slider[i].setMajorTickSpacing(tickSpace);
-                jsValue = slider[i].getValue();
-                String stringValue = jsValue + "";
-                hl.setParameter(i,stringValue);
-                jsValue = slider[i].getValue();
-                
-                slider[i].addChangeListener(new ChangeListener(){
-                     @Override
-                     public void stateChanged(ChangeEvent ce) {
-                          JSlider js = (JSlider) ce.getSource();
-                          jsValue = js.getValue();
-                          String stringValue = jsValue + "";
-                          jspos = (js.getAccessibleContext().getAccessibleIndexInParent()-10)/2;
-                          jText[jspos].setText(stringValue);
-                          
-                          hl.setParameter(jspos,stringValue);
-                          for(int j=jspos+1;j<numAxes-1;j++){
-                                slider[j].setMinimum(jsValue);
-                                jsValue = slider[j].getValue();
-                                stringValue = jsValue + "";
-                                jText[j].setText(stringValue);
-                          }
-                          
-                     }
-                });
-                        
-                hivePanel.add(slider[i]);
-              
-                jText[i] = new JTextField();
-                jText[i].setEditable(false);
-                jText[i].setText(jsValue + "");
-                jText[i].addActionListener(new ActionListener() {
-                      @Override
-                      public void actionPerformed(ActionEvent ae) {
-                          JTextField jt = (JTextField) ae.getSource();
-                          jspos = (jt.getAccessibleContext().getAccessibleIndexInParent()-10)/2;
-                          hl.setParameter(jspos,jt.getText());
-                      }
-                });
-                
-                hivePanel.add(jText[i]);
-            }
           
           this.add(hivePanel);
           callCount++;
@@ -609,10 +538,13 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
               }
               //if a new value is chosen in axis assignment combo box recompute sliders
               else{
-                  for(int i=0;i<numAxes-1;i++){
+                  if(callCount != 1){
+                    for(int i=0;i<numAxes-1;i++){
                         hivePanel.remove(slider[i]);
                         hivePanel.remove(jText[i]);
+                    }
                   }
+                  callCount++;
                                   
                 if(max-min > 1000)
                     tickSpace = 100;
