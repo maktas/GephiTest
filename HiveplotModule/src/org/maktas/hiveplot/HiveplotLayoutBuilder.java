@@ -41,8 +41,8 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
     JPanel p = new JPanel(grid);
     private HiveplotLayoutUI ui = new HiveplotLayoutUI();
     HiveplotLayout hl = new HiveplotLayout(this);
-    JComboBox<AttributeColumn> cb, cb2;
-    AttributeColumn nodeOrder, axisOrder;
+    JComboBox<String> cb, cb2;
+    String nodeOrder, axisOrder;
     int tickSpace=1;
     int numAxes=3;
     int oldnumAxes=3;
@@ -54,12 +54,12 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
         return NbBundle.getMessage(HiveplotLayout.class, "name");
     }
     
-    public AttributeColumn getNodeOrder()
+    public String getNodeOrder()
     {
         return nodeOrder;
     }
     
-    public AttributeColumn getAxisOrder()
+    public String getAxisOrder()
     {
         return axisOrder;
     }
@@ -123,13 +123,10 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
             
             hivePanel.add(button, grid);
             
-            label = new JLabel("Axis Assignment Property:");
+            label = new JLabel("Select the radio button for nominal");
             hivePanel.add(label, grid);
-            
-            label = new JLabel("(Select the radio button if nominal)");
-            hivePanel.add(label, grid);
-            
-            JRadioButton radio = new JRadioButton("Nominal/Numerical");
+                  
+            JRadioButton radio = new JRadioButton(" Nominal axis assign. prop.");
             radio.addActionListener(new ActionListener(){
                 @Override
                 public void actionPerformed(ActionEvent e){
@@ -140,6 +137,9 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                 }
             });
             hivePanel.add(radio, grid);
+            
+            label = new JLabel("Axis Assignment Property:");
+            hivePanel.add(label, grid);
             
             int count=0, pos=0;
             for(int i=0;i<n.length;i++){
@@ -153,19 +153,19 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                 }
             }
             
-            AttributeColumn[] m = new AttributeColumn[count];
+            String[] m = new String[count];
             
             //Calculate the columns for axis assignment property
             for(int i=0;i<n.length;i++){
                 if(radioValue == 0){
                     if(!n[i].getType().equals(AttributeType.STRING)){
-                    m[pos] = n[i];
+                    m[pos] = n[i].getTitle();
                     pos++;
                     }
                 }
                 else{
                     if(n[i].getType().equals(AttributeType.STRING)){
-                    m[pos] = n[i];
+                    m[pos] = n[i].getTitle();
                     pos++;
                     }
                 }
@@ -173,13 +173,13 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
             nodeOrder = m[0];
             hl.setColumn(nodeOrder);
             
-            cb = new JComboBox<AttributeColumn> (m);
+            cb = new JComboBox<String> (m);
             cb.addItemListener(new ItemListener() {
 
               @Override
               public void itemStateChanged(ItemEvent ie) {
                   if(ie.getStateChange() == 1){
-                    nodeOrder = (AttributeColumn) cb.getSelectedItem();
+                    nodeOrder = (String) cb.getSelectedItem();
                     hl.setColumn(nodeOrder);
                     min = (int) Math.floor(hl.getMin(nodeOrder));
                     max = (int) Math.floor(hl.getMax(nodeOrder));
@@ -201,12 +201,12 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                     count++;
             }
             
-            AttributeColumn[] o = new AttributeColumn[count];
+            String[] o = new String[count];
             
             //Calculate the columns for on-axis ordering property
             for(int i=0;i<n.length;i++){
                     if(!n[i].getType().equals(AttributeType.STRING)){
-                    o[pos] = n[i];
+                    o[pos] = n[i].getTitle();
                     pos++;
                     }
             }
@@ -215,13 +215,13 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
             axisOrder = o[0];
             hl.setAxisColumn(axisOrder);
             
-            cb2 = new JComboBox<AttributeColumn> (o);
+            cb2 = new JComboBox<String> (o);
             cb2.addItemListener(new ItemListener() {
 
               @Override
               public void itemStateChanged(ItemEvent ie) {
                   if(ie.getStateChange() == 1){
-                    axisOrder = (AttributeColumn) cb2.getSelectedItem();
+                    axisOrder = (String) cb2.getSelectedItem();
                     hl.setAxisColumn(axisOrder);
                   }
               }
@@ -353,19 +353,19 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                 }
             }
             
-            AttributeColumn[] m = new AttributeColumn[count];
+            String[] m = new String[count];
             
             for(int i=0;i<n.length;i++){
                 if(radioValue == 1){
                     if(n[i].getType().equals(AttributeType.STRING)){
-                    m[pos] = n[i];
+                    m[pos] = n[i].getTitle();
                     cb.addItem(m[pos]);
                     pos++;
                     }
                 }
                 else{
                     if(!n[i].getType().equals(AttributeType.STRING)){
-                    m[pos] = n[i];
+                    m[pos] = n[i].getTitle();
                     cb.addItem(m[pos]);
                     pos++;
                     }
@@ -387,19 +387,19 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                 }
             }
             
-            AttributeColumn[] o = new AttributeColumn[count];
+            String[] o = new String[count];
             
             for(int i=0;i<n.length;i++){
                 if(radioValue == 1){
                     if(n[i].getType().equals(AttributeType.STRING)){
-                    o[pos] = n[i];
+                    o[pos] = n[i].getTitle();
                     cb2.addItem(o[pos]);
                     pos++;
                     }
                 }
                 else{
                     if(!n[i].getType().equals(AttributeType.STRING)){
-                    o[pos] = n[i];
+                    o[pos] = n[i].getTitle();
                     cb2.addItem(o[pos]);
                     pos++;
                     }
@@ -429,13 +429,13 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                 }
             }
             
-            AttributeColumn[] m = new AttributeColumn[count];
+            String[] m = new String[count];
             
             //If nominal is chosen in radio, bring nominal values to axis assignment combo box else bring numerical values
                 if(radioValue == 1){
                   for(int i=0;i<n.length;i++){
                     if(n[i].getType().equals(AttributeType.STRING)){
-                    m[pos] = attributeTable.getColumn(i);
+                    m[pos] = n[i].getTitle();
                     cb.addItem(m[pos]);
                     pos++;
                     }
@@ -467,7 +467,7 @@ public class HiveplotLayoutBuilder implements LayoutBuilder
                     
                   for(int i=0;i<n.length;i++){
                     if(!n[i].getType().equals(AttributeType.STRING)){
-                    m[pos] = attributeTable.getColumn(i);
+                    m[pos] = n[i].getTitle();
                     cb.addItem(m[pos]);
                     pos++;
                     }
